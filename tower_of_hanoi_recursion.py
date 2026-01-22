@@ -34,10 +34,15 @@ class TowerOfHanoiGUI:
         self.disk_entry = tk.Entry(left_frame, width=5)
         self.disk_entry.pack(side="left")
 
-        # Center: START button (blue)
+        # Center: START (blue) and RESET (red) buttons together
         center_frame = tk.Frame(self.input_frame)
         center_frame.pack(side="left", expand=True)
-        tk.Button(center_frame, text="START", width=10, bg="blue", fg="white", command=self.start_simulation).pack()
+
+        self.start_btn = tk.Button(center_frame, text="START", width=10, bg="blue", fg="white", command=self.start_simulation)
+        self.start_btn.pack(side="left", padx=5)
+
+        self.reset_btn = tk.Button(center_frame, text="RESET", width=10, bg="red", fg="white", command=self.reset_simulation)
+        self.reset_btn.pack(side="left", padx=5)
 
         # Right: SPEED UP / AVERAGE buttons
         right_frame = tk.Frame(self.input_frame)
@@ -87,6 +92,7 @@ class TowerOfHanoiGUI:
 
     def animate_move(self):
         if self.animation_index >= len(self.disk_order):
+            self.start_btn.config(state=tk.NORMAL)  # Re-enable start after finish
             return
 
         if self.moving_disk is None:
@@ -153,7 +159,7 @@ class TowerOfHanoiGUI:
                                self.current_x,
                                self.current_y - self.disk_height/2)
 
-        # Always use current animation_speed, so SPEED UP applies immediately
+        # Always use current animation_speed
         self.root.after(self.animation_speed, self.animate_move)
 
     def start_simulation(self):
@@ -171,6 +177,7 @@ class TowerOfHanoiGUI:
                 self.disk_order = []
                 self.animation_index = 0
                 self.moving_disk = None
+                self.start_btn.config(state=tk.DISABLED)  # Disable start
                 self.disk_entry.config(state=tk.DISABLED)
                 self.solve_hanoi(self.num_disks, 'A', 'B', 'C')
                 self.root.after(self.animation_speed, self.animate_move)
@@ -178,6 +185,21 @@ class TowerOfHanoiGUI:
                 messagebox.showerror("Error", "Enter a number between 1 and 8")
         except ValueError:
             messagebox.showerror("Error", "Invalid input! Enter a number.")
+
+    def reset_simulation(self):
+        # Clear canvas and reset everything
+        self.canvas.delete("all")
+        self.pegs = {'A': [], 'B': [], 'C': []}
+        self.disk_values = []
+        self.disk_colors = []
+        self.disk_order = []
+        self.animation_index = 0
+        self.moving_disk = None
+        self.moving_text = None
+        self.phase = None
+        self.start_btn.config(state=tk.NORMAL)  # Enable start button
+        self.disk_entry.config(state=tk.NORMAL)
+        self.disk_entry.delete(0, tk.END)
 
 root = tk.Tk()
 app = TowerOfHanoiGUI(root)
